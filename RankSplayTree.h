@@ -11,17 +11,20 @@
  * a generic class for a SplayTree, with a nested class for a node. the class holds a pointer to the root of the tree, to the minimum and maximum nodes
  * and an integer to hold the tree size.
  */
-template<class T>
+template<class T, class S>
 class RankSplayTree {
 private:
 
     /**
-     * a nested class of the tree to represent a node in the tree. a node will hold a generic data (which in our case will hold a gladiator or a trainer)
+     * a nested class of the tree to represent a node in the tree. a node will hold a generic data, the sum of it's sub-tree's data, the key, the rank
      * and pointers to his sons and parent.
      */
     class Node {
     private:
-        T *data;
+        S *data;
+        S *sumData;
+        T *key;
+        int rank;
         Node *parent;
         Node *right_son;
         Node *left_son;
@@ -31,10 +34,11 @@ private:
     public:
         /**
          * a constructor for a tree node.
-         * @param data - the type the node will hold
+         * @param key - the key of the node
+         * @param data - the data of the node
          * @param parent - the parent under which the node will be listed as a son
          */
-        Node(const T data, Node *parent);
+        Node(const T key, const S data, Node *parent);
         /**
          * a destructor for the node
          */
@@ -47,8 +51,8 @@ private:
     int size;
 
     //to make them unavailable to users (= delete does not work in g++)
-    RankSplayTree &operator=(const RankSplayTree &splay_tree);
-    RankSplayTree(const RankSplayTree &splay_tree);
+    RankSplayTree &operator=(const RankSplayTree &rank_splay_tree);
+    RankSplayTree(const RankSplayTree &rank_splay_tree);
 
     /**
      * splaying a node to the top of the tree to become a root. in the worst case scenario a node will be splayed through the entire height of the tree
@@ -78,7 +82,7 @@ private:
     // an aux function for postOrderRemoval function. runs over 'n' nodes and thus run in a complexity of O(n)
     void postOrderAuxRemoval(Node *cur_node);
     // an aux function for 'find'. runs in an average complexity of log(n).
-    Node *findAux(Node *cur_node, const T& key);
+    Node *findAux(Node *cur_node, const T& key, const S &data);
     // joins two trees when the right tree is bigger than the left tree. runs at O(log n) since it runs to the bottom right of the left tree.
     void join(Node *left_tree, Node *right_tree);
 
@@ -88,11 +92,15 @@ public:
     // destructor for the tree
     ~RankSplayTree();
     // find an object in the tree and returns it's pointer. calls findAux and runs in O(log n).
-    T &find(const T &key);
+    T &find(const T &key, const S &data);
     // receives an object, sends it to 'find' to get the closest node and inserts it to the tree. after that, splays it to the root. runs in O(log n).
-    void insert(const T &key);
+    void insert(const T &key, const S &data);
     // receives a key of an object to be removed from the tree. finds it, splays to the root, removes and calls 'join' to merge the trees. runs in O(log n).
-    void remove(const T &key);
+    void remove(const T &key, const S &data);
+    // receives a key of an object and calculates it's rank
+    int getRank(const T &key);
+    // receives a key of an object and sums the data values of the entire sub-tree it is the root of.
+    S &getSumData(const T &key);
     // iterates through the nodes in order. calls inOrderAux and receives a func to perform on the nodes. runs in O(n) (for the iteration only).
     template<class do_something>
     void inOrder(do_something &func);
@@ -109,39 +117,49 @@ public:
  * Public functions
  */
 
-template<class T>
-RankSplayTree<T>::RankSplayTree() : root(NULL), min(NULL), max(NULL), size(0) {}
+template<class T, class S>
+RankSplayTree<T, S>::RankSplayTree() : root(NULL), min(NULL), max(NULL), size(0) {}
 
-template<class T>
-RankSplayTree<T>::~RankSplayTree() {
+template<class T, class S>
+RankSplayTree<T, S>::~RankSplayTree() {
     postOrderAuxRemoval(root);
 }
 
-template<class T>
-T &RankSplayTree<T>::find(const T &key) {
-    Node *found_node = findAux(root, key);
+template<class T, class S>
+T &RankSplayTree<T, S>::find(const T &key, const S &data) {
+    Node *found_node = findAux(root, key, data);
     splay(found_node);
-    if (found_node == NULL || *found_node->data != key) {
+    if (found_node == NULL || *found_node->key != key) {
         throw KeyNotFound();
     }
-    return *found_node->data;
+    return *found_node->key;
 }
 
-template<class T>
-void RankSplayTree<T>::insert(const T &key) {
-    Node *found_node = findAux(root, key);
-    if (found_node != NULL && key == *found_node->data) {
+template<class T, class S>
+void RankSplayTree<T, S>::insert(const T &key, const S &data) {
+    Node *found_node = findAux(root, key, data);
+    if (found_node != NULL && key == *found_node->key) {
         throw KeyAlreadyExists();
     }
-    Node *to_insert = new Node(key, found_node);
+    Node *to_insert = new Node(key, data, found_node);
     if (found_node != NULL) {
-        if (key < *found_node->data) {
+        if (data < *found_node->data) {
             found_node->left_son = to_insert;
         } else {
             found_node->right_son = to_insert;
         }
         to_insert->parent = found_node;
     }
+
+    S *tmp_sum = to_insert->sumData;
+    int tmp_rank = to_insert->rank;
+    Node *tmp_node = to_insert;
+    while (tmp_node->parent != NULL && tmp_node != root) {
+        *tmp_node->parent->sumData += *tmp_sum;
+        tmp_node->parent->rank += tmp_rank;
+        tmp_node = tmp_node->parent;
+    }
+
     splay(to_insert);
     if (found_node == NULL) {
         root = to_insert;
@@ -156,13 +174,13 @@ void RankSplayTree<T>::insert(const T &key) {
     size++;
 }
 
-template<class T>
-void RankSplayTree<T>::remove(const T &key) {
+template<class T, class S>
+void RankSplayTree<T, S>::remove(const T &key, const S &data) {
     if (root == NULL) {
         throw EmptyTree();
     }
-    Node *found_node = findAux(root, key);
-    if (key != *found_node->data) {
+    Node *found_node = findAux(root, key, data);
+    if (key != *found_node->key) {
         throw KeyNotFound();
     }
     splay(found_node);
@@ -173,8 +191,8 @@ void RankSplayTree<T>::remove(const T &key) {
     join(left_tree, right_tree);
 }
 
-template<class T>
-void RankSplayTree<T>::join(Node *left_tree, Node *right_tree){
+template<class T, class S>
+void RankSplayTree<T, S>::join(Node *left_tree, Node *right_tree){
     if(right_tree != NULL && left_tree != NULL){
         right_tree->parent = NULL;
         left_tree->parent = NULL;
@@ -187,6 +205,8 @@ void RankSplayTree<T>::join(Node *left_tree, Node *right_tree){
         root->right_son = right_tree;
         root->parent = NULL;
         root->right_son->parent = root;
+        *root->sumData += *root->right_son->sumData;
+        root->rank += root->right_son->rank;
     } else if(right_tree == NULL && left_tree == NULL){
         root = NULL;
         max = NULL;
@@ -212,28 +232,28 @@ void RankSplayTree<T>::join(Node *left_tree, Node *right_tree){
     }
 }
 
-template<class T>
+template<class T, class S>
 template<class do_something>
-void RankSplayTree<T>::inOrder(do_something &func) {
+void RankSplayTree<T, S>::inOrder(do_something &func) {
     inOrderAux(root, func);
 }
 
-template<class T>
+template<class T, class S>
 template<class do_something>
-void RankSplayTree<T>::inOrderReverse(do_something &func) {
+void RankSplayTree<T, S>::inOrderReverse(do_something &func) {
     inOrderAuxReverese(root, func);
 }
 
-template<class T>
-T &RankSplayTree<T>::getMax() {
+template<class T, class S>
+T &RankSplayTree<T, S>::getMax() {
     if (max == NULL) {
         throw EmptyTree();
     }
-    return *max->data;
+    return *max->key;
 }
 
-template<class T>
-int RankSplayTree<T>::getSize() {
+template<class T, class S>
+int RankSplayTree<T, S>::getSize() {
     return size;
 }
 
@@ -241,8 +261,8 @@ int RankSplayTree<T>::getSize() {
  * private functions
  */
 
-template<class T>
-void RankSplayTree<T>::splay(RankSplayTree::Node *node) {
+template<class T, class S>
+void RankSplayTree<T, S>::splay(RankSplayTree::Node *node) {
     while (node!=NULL && node->parent != NULL && node != root && node->parent != root) {
         Node *p = node->parent;
         Node *g = p->parent;
@@ -258,17 +278,35 @@ void RankSplayTree<T>::splay(RankSplayTree::Node *node) {
     }
 }
 
-template<class T>
-void RankSplayTree<T>::zig(RankSplayTree::Node *node) {
+template<class T, class S>
+void RankSplayTree<T, S>::zig(RankSplayTree::Node *node) {
+    S tmp_root_sum = *root->sumData;
+    S tmp_node_sum = *root->data;
+    int tmp_root_rank = root->rank;
+    int tmp_node_rank = 1;
+    Node *tmp_root = root;
     if (root->left_son == node) {
+        if (root->right_son != NULL) {
+            tmp_node_sum += *root->right_son->sumData;
+            tmp_node_rank += root->right_son->rank;
+        }
         root->left_son = node->right_son;
         if (node->right_son != NULL) {
+            tmp_node_sum += *node->right_son->sumData;
+            tmp_node_rank += node->right_son->rank;
             root->left_son->parent = root;
         }
         node->right_son = root;
+
     } else {
+        if (root->left_son != NULL) {
+            tmp_node_sum += *root->left_son->sumData;
+            tmp_node_rank += root->left_son->rank;
+        }
         root->right_son = node->left_son;
         if (node->left_son != NULL) {
+            tmp_node_sum += *node->left_son->sumData;
+            tmp_node_rank += node->left_son->rank;
             root->right_son->parent = root;
         }
         node->left_son = root;
@@ -276,38 +314,73 @@ void RankSplayTree<T>::zig(RankSplayTree::Node *node) {
     node->parent = NULL;
     root->parent = node;
     root = node;
+
+    *root->sumData = tmp_root_sum;
+    root->rank = tmp_root_rank;
+    *tmp_root->sumData = tmp_node_sum;
+    tmp_root->rank = tmp_node_rank;
 }
 
-template<class T>
-void RankSplayTree<T>::zigZag(RankSplayTree::Node *node) {
+template<class T, class S>
+void RankSplayTree<T, S>::zigZag(RankSplayTree::Node *node) {
     Node *p = node->parent;
     Node *g = p->parent;
     if (g == root) {
         root = node;
     }
+    S new_n_sum = *g->sumData;
+    S new_p_sum = *p->data;
+    S new_g_sum = *g->data;
+    int new_n_rank = g->rank;
+    int new_p_rank = 1;
+    int new_g_rank = 1;
     if (*node->data < *p->data) {
+        if (p->right_son != NULL) { //W
+            new_p_sum += *p->right_son->sumData;
+            new_p_rank += p->right_son->rank;
+        }
+        if (g->left_son != NULL) { //X
+            new_g_sum += *g->left_son->sumData;
+            new_g_rank += g->left_son->rank;
+        }
         //attach node's left son to g
         g->right_son = node->left_son;
-        if (g->right_son != NULL) {
+        if (g->right_son != NULL) { //Y
+            new_g_sum += *g->right_son->sumData;
+            new_g_rank += g->right_son->rank;
             g->right_son->parent = g;
         }
         //attach nodes right son to p
         p->left_son = node->right_son;
-        if (p->left_son != NULL) {
+        if (p->left_son != NULL) { //Z
+            new_p_sum += *p->left_son->sumData;
+            new_p_rank += p->left_son->rank;
             p->left_son->parent = p;
         }
         //attach both g and p to node
         node->left_son = g;
         node->right_son = p;
     } else {
+        if (p->left_son != NULL) { //W
+            new_p_sum += *p->left_son->sumData;
+            new_p_rank += p->left_son->rank;
+        }
+        if (g->right_son != NULL) { //Z
+            new_g_sum += *g->right_son->sumData;
+            new_g_rank += g->right_son->rank;
+        }
         //attach node's right son to g
         g->left_son = node->right_son;
-        if (g->left_son != NULL) {
+        if (g->left_son != NULL) { //Y
+            new_g_sum += *g->left_son->sumData;
+            new_g_rank += g->left_son->rank;
             g->left_son->parent = g;
         }
         //attach nodes left son to p
         p->right_son = node->left_son;
-        if (p->right_son != NULL) {
+        if (p->right_son != NULL) { //X
+            new_p_sum += *p->right_son->sumData;
+            new_p_rank += p->right_son->rank;
             p->right_son->parent = p;
         }
         //attach both g and p to node
@@ -323,24 +396,49 @@ void RankSplayTree<T>::zigZag(RankSplayTree::Node *node) {
     }
     p->parent = node;
     g->parent = node;
+
+    *g->sumData = new_g_sum;
+    *p->sumData = new_p_sum;
+    *node->sumData = new_n_sum;
+    g->rank = new_g_rank;
+    p->rank = new_p_rank;
+    node->rank = new_n_rank;
 }
 
-template<class T>
-void RankSplayTree<T>::zigZig(RankSplayTree::Node *node) {
+template<class T, class S>
+void RankSplayTree<T, S>::zigZig(RankSplayTree::Node *node) {
     Node *p = node->parent;
     Node *g = p->parent;
     if (g == root) {
         root = node;
     }
+    S new_n_sum = *g->sumData;
+    S new_p_sum = *p->data + *g->data;
+    S new_g_sum = *g->data;
+    int new_n_rank = g->rank;
+    int new_p_rank = 2;
+    int new_g_rank = 1;
     if (*node->data < *p->data) {
+        if (g->right_son != NULL) { //Z
+            new_p_sum += *g->right_son->sumData;
+            new_g_sum += *g->right_son->sumData;
+            new_p_rank += g->right_son->rank;
+            new_g_rank += g->right_son->rank;
+        }
         //attach p's right son to g
         g->left_son = p->right_son;
-        if (g->left_son != NULL) {
+        if (g->left_son != NULL) { // Y
+            new_p_sum += *g->left_son->sumData;
+            new_g_sum += *g->left_son->sumData;
+            new_p_rank += g->left_son->rank;
+            new_g_rank += g->left_son->rank;
             g->left_son->parent = g;
         }
         //attach nodes right son to p
         p->left_son = node->right_son;
-        if (p->left_son != NULL) {
+        if (p->left_son != NULL) { //X
+            new_p_sum += *p->left_son->sumData;
+            new_p_rank += p->left_son->rank;
             p->left_son->parent = p;
         }
         //attach p to node
@@ -349,14 +447,26 @@ void RankSplayTree<T>::zigZig(RankSplayTree::Node *node) {
         //attach g to p
         p->right_son = g;
     } else {
+        if (g->left_son != NULL) { //W
+            new_p_sum += *g->left_son->sumData;
+            new_g_sum += *g->left_son->sumData;
+            new_p_rank += g->left_son->rank;
+            new_g_rank += g->left_son->rank;
+        }
         //attach p's left son to g
         g->right_son = p->left_son;
-        if (g->right_son != NULL) {
+        if (g->right_son != NULL) { //X
+            new_p_sum += *g->right_son->sumData;
+            new_g_sum += *g->right_son->sumData;
+            new_p_rank += g->right_son->rank;
+            new_g_rank += g->right_son->rank;
             g->right_son->parent = g;
         }
         //attach nodes left son to p
         p->right_son = node->left_son;
-        if (p->right_son != NULL) {
+        if (p->right_son != NULL) { //Y
+            new_p_sum += *p->right_son->sumData;
+            new_p_rank += p->right_son->rank;
             p->right_son->parent = p;
         }
         //attach p to node
@@ -373,11 +483,18 @@ void RankSplayTree<T>::zigZig(RankSplayTree::Node *node) {
     }
     node->parent = g->parent;
     g->parent = p;
+
+    *g->sumData = new_g_sum;
+    *p->sumData = new_p_sum;
+    *node->sumData = new_n_sum;
+    g->rank = new_g_rank;
+    p->rank = new_p_rank;
+    node->rank = new_n_rank;
 }
 
-template<class T>
+template<class T, class S>
 template<class do_something>
-void RankSplayTree<T>::inOrderAux(RankSplayTree::Node *cur_node, do_something &func) {
+void RankSplayTree<T, S>::inOrderAux(RankSplayTree::Node *cur_node, do_something &func) {
     if (cur_node == NULL) return;
 
     inOrderAux(cur_node->left_son, func);
@@ -385,9 +502,9 @@ void RankSplayTree<T>::inOrderAux(RankSplayTree::Node *cur_node, do_something &f
     inOrderAux(cur_node->right_son, func);
 }
 
-template<class T>
+template<class T, class S>
 template<class do_something>
-void RankSplayTree<T>::inOrderAuxReverese(Node *cur_node, do_something &func) {
+void RankSplayTree<T, S>::inOrderAuxReverese(Node *cur_node, do_something &func) {
     if (cur_node == NULL) return;
 
     inOrderAuxReverese(cur_node->right_son, func);
@@ -395,31 +512,31 @@ void RankSplayTree<T>::inOrderAuxReverese(Node *cur_node, do_something &func) {
     inOrderAuxReverese(cur_node->left_son, func);
 }
 
-template<class T>
-void RankSplayTree<T>::postOrderAuxRemoval(RankSplayTree::Node *cur_node) {
+template<class T, class S>
+void RankSplayTree<T, S>::postOrderAuxRemoval(RankSplayTree::Node *cur_node) {
     if (cur_node == NULL) return;
     postOrderAuxRemoval(cur_node->left_son);
     postOrderAuxRemoval(cur_node->right_son);
     delete cur_node;
 }
 
-template<class T>
-typename RankSplayTree<T>::Node *RankSplayTree<T>::findAux(RankSplayTree::Node *cur_node, const T& key) {
+template<class T, class S>
+typename RankSplayTree<T, S>::Node *RankSplayTree<T, S>::findAux(RankSplayTree::Node *cur_node, const T& key, const S &data) {
     if (cur_node == NULL) return NULL;
-    if (key == *cur_node->data) {
+    if (key == *cur_node->key) {
         return cur_node;
     }
-    if (key > *cur_node->data) {
+    if (data > *cur_node->data) {
         if (cur_node->right_son == NULL) {
             return cur_node;
         }
-        return findAux(cur_node->right_son, key);
+        return findAux(cur_node->right_son, key, data);
     }
-    if (key < *cur_node->data) {
+    if (data < *cur_node->data) {
         if (cur_node->left_son == NULL) {
             return cur_node;
         }
-        return findAux(cur_node->left_son, key);
+        return findAux(cur_node->left_son, key, data);
     }
     return  NULL;
 }
@@ -428,12 +545,25 @@ typename RankSplayTree<T>::Node *RankSplayTree<T>::findAux(RankSplayTree::Node *
  * Node functions
  */
 
-template<class T>
-RankSplayTree<T>::Node::Node(const T data, Node *parent) : data(new T(data)), parent(parent), right_son(NULL), left_son(NULL) {}
+template<class T, class S>
+RankSplayTree<T, S>::Node::Node(const T key, const S data, Node *parent) : rank(1), key(new T(key)), data(new S(data)), sumData(new S(data)),
+                                                                           parent(parent), right_son(NULL), left_son(NULL) {}
 
-template<class T>
-RankSplayTree<T>::Node::~Node() {
+template<class T, class S>
+RankSplayTree<T, S>::Node::~Node() {
+    delete key;
     delete data;
+    delete sumData;
 }
+
+template<class T, class S>
+int getRank(const T &key) {
+
+};
+
+template<class T, class S>
+S &getSumData(const T &key) {
+
+};
 
 #endif //WET2_RANKSPLAYTREE_H
