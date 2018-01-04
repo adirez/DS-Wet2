@@ -5,9 +5,7 @@
 #ifndef WET2_COLOSSEUM_H
 #define WET2_COLOSSEUM_H
 
-#include "MinHeap.h"
 #include "HashTable.h"
-#include "RankSplayTree.h"
 
 class Colosseum {
     MinHeap *minHeap;

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "MinHeap.h"
+#include "Colosseum.h"
 
 using std::cout;
 using std::endl;
@@ -13,35 +13,11 @@ int main() {
     arr[3] = 4;
     arr[4] = 7;
 
-    MinHeap heap(5, arr);
-    TrainingGroup** ptrArr = heap.makeHeap();
-    TrainingGroup** ptrArr2 = new TrainingGroup*[6];
-    for (int i=1; i<=5; ++i){
-        ptrArr2 = ptrArr;
-    }
-
-    heap.decKey(5, -12);
-    heap.insert(1);
-    heap.insert(13);
-    heap.insert(9);
-    heap.decKey(3, 0);
-    heap.insert(-20);
-    heap.insert(-2);
-    heap.insert(-10);
-
-
-/*    for (int i = 0; i < 13; ++i) {
-        cout << heap.getMin()->getID() << ", ";
-        heap.delMin();
-    }
-
-    cout << endl;*/
-
-    for (int i = 1; i <= 5 ; ++i) {
-        cout << ptrArr2[i]->getIdx() << ", ";
-    }
-
-    cout << endl;
+    Colosseum colosseum(5, arr);
+    colosseum.addTrainingGroup(11);
+    colosseum.addTrainingGroup(20);
+    colosseum.addTrainingGroup(14);
+    colosseum.addTrainingGroup(1);
 
     return 0;
 }
