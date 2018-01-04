@@ -8,9 +8,6 @@ HashTable::HashTable(int n, int *array, TrainingGroup** ptrArr) {
     list = new List<HashNode>[2*n];
     size = 2*n;
     int hash = 0;
-/*    for (int i = 0; i < size; ++i) {
-        list[i] = new List<HashNode*>;
-    }*/
     for (int i = 0; i < n; ++i) {
         hash = array[i] % size;
         list[hash].insert(HashNode(array[i], ptrArr[i+1]));

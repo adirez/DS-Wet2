@@ -25,8 +25,6 @@ class List {
     Node *last;
     int size;
 
-    friend class HashTable;
-
 public:
     class Iterator{
         const List* list;
@@ -36,9 +34,17 @@ public:
         friend class List;
         friend class HashTable;
 
+
     public:
-        Iterator(const Iterator &) {};
-        Iterator &operator=(const Iterator &) {};
+        Iterator(const Iterator& it) : list(it.list), cur_node(it.cur_node) {};
+        Iterator &operator=(const Iterator& it){
+            if (this == &it){
+                return *this;
+            }
+            list = it.list;
+            cur_node = it.cur_node;
+            return *this;
+        }
         ~Iterator() {};
         const T &operator*() const;
         Iterator &operator++();
@@ -260,7 +266,8 @@ void List<T>::sort(const Compare& compare) {
 *//*--------------------------------------------------------------------------*/
 
 template <class T>
-List<T>::Node::Node(const T data) : data(new T(data)), next (NULL), previous (NULL) {}
+List<T>::Node::Node(const T data) : data(new T(data)), next(NULL),
+                                    previous(NULL) {}
 
 template <class T>
 List<T>::Node::~Node() {
@@ -331,5 +338,7 @@ template <class T>
 bool List<T>::Iterator::operator!=(const Iterator iterator) const {
     return !(*this == iterator);
 }
+
+
 
 #endif //WET2_LIST_H
