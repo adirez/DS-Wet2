@@ -16,6 +16,7 @@ class List {
 
         friend class List;
         friend class Iterator;
+        friend class HashTable;
     public:
         Node(const T data);
         ~Node();
@@ -24,6 +25,8 @@ class List {
     Node *last;
     int size;
 
+    friend class HashTable;
+
 public:
     class Iterator{
         const List* list;
@@ -31,6 +34,7 @@ public:
         Iterator(const List* list, Node *cur_node);
 
         friend class List;
+        friend class HashTable;
 
     public:
         Iterator(const Iterator &) = default;

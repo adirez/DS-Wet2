@@ -8,64 +8,72 @@
 #include <cstdlib>
 #include "List.h"
 
-template <class T, class S, class do_something>
+template <class T>
 class HashTable {
 
 private:
 
     class HashNode {
     private:
-        T *key;
-        S *data;
+        int key;
+        T *data;
 
         friend class HashTable;
 
     public:
-        HashNode(const T key, const S data) : key(key), data(data) {};
+        HashNode(const int key, const T data) : key(key), data(data) {};
         ~HashNode();
     };
 
     List<HashNode*> *arr;
-    do_something &func;
     int size;
     int used;
 
-    int HashFunc(HashNode *node);
+    int HashFunc(int key);
 
 public:
-    HashTable(int n, do_something &func);
+    explicit HashTable(int n);
     ~HashTable();
-    void insert(T key, S data);
-    void remove(T key, S data);
+    void insert(int key, T data);
+    void remove(int key, T data);
+    List<HashNode*>::Node *find(int key) {
 
-};
+    };
 
-template <class T, class S, class do_something>
-HashTable<T,S,do_something>::~HashTable() {
+template <class T>
+HashTable<T>::~HashTable() {
     for (int i = 0; i < size; ++i) {
         delete(arr[i]);
     }
     free(arr);
-    delete(func);
 }
 
-template <class T, class S, class do_something>
-HashTable<T,S,do_something>::HashTable(int n, do_something &func) : func(func) {
+template <class T>
+HashTable<T>::HashTable(int n) {
+    used = 0;
     size = 2 * n;
-    arr = (List<HashNode*>*) malloc(2 * n * sizeof(List<HashNode*>));
+    if (n == 0) {
+        size = 1; // so we can always insert a node
+    }
+    arr = (List<HashNode*>*) malloc(size * sizeof(List<HashNode*>));
     if (arr == NULL) {
         throw MemoryProblem();
     }
 }
 
-template <class T, class S, class do_something>
-int HashTable<T,S,do_something>::HashFunc(HashNode *node) {
-    return func(node);
+template <class T>
+int HashTable<T>::HashFunc(int key) {
+    return key % size;
 };
 
-template <class T, class S, class do_something>
-void HashTable<T,S,do_something>::insert(T key, S data) {
+template <class T>
+void HashTable<T>::insert(int key, T data) {
     used++;
+    if (arr[HashFunc(key)] == NULL) {
+        arr[HashFunc(key)] = new List<HashNode*>;
+    }
+    arr[HashFunc(key)].insert(data);
+
     if (used >= size) {
         size *= 2;
         List<HashNode*> *tmp_arr = (List<HashNode*>*)malloc(size * sizeof(List<HashNode*>));
@@ -73,28 +81,66 @@ void HashTable<T,S,do_something>::insert(T key, S data) {
             throw MemoryProblem();
         }
         for (int i = 0; i < size / 2; ++i) {
-
+            for (List<HashNode*>::Iterator it = arr[i].begin(); it != arr[i].end(); ++it) {
+                tmp_arr[HashFunc(it->cur_node->data)].insert(it.cur_node->data);
+                delete(arr[HashFunc(it.cur_node->data)]);
+            }
+            delete(arr[i]);
         }
+        free(arr);
+        arr = tmp_arr;
     }
-    HashNode *to_insert = new HashNode(key, data);
-    int index = HashFunc(to_insert);
-    arr[index].insert(to_insert);
 }
 
-template <class T, class S, class do_something>
-void HashTable<T,S,do_something>::remove(T key, S data) {
-    HashNode *to_insert = new HashNode(key, data);
-    int index = HashFunc(to_insert);
-    arr[index].insert(to_insert);
+template <class T>
+void HashTable<T>::remove(int key, T data) {
+    List<HashNode*>::Node *found_node = find(key);
+    if (found_node == NULL) {
+        throw KeyNotFound();
+    }
+    List<HashNode *>::Iterator it = arr[HashFunc(key)].find(key);
+    arr[HashFunc(key)].remove(it);
+
+    if (arr[HashFunc(key)].getSize() == 0) {
+        delete(arr[HashFunc(key)]);
+    }
+
+    used--;
+    if (used < (size / 2)) {
+        size /= 2;
+        List<HashNode*> *tmp_arr = (List<HashNode*>*)malloc(size * sizeof(List<HashNode*>));
+        if (tmp_arr == NULL) {
+            throw MemoryProblem();
+        }
+        for (int i = 0; i < size / 2; ++i) {
+            for (List<HashNode*>::Iterator it = arr[i].begin(); it != arr[i].end(); ++it) {
+                tmp_arr[HashFunc(it->cur_node->data)].insert(it.cur_node->data);
+                delete(arr[HashFunc(it.cur_node->data)]);
+            }
+            delete(arr[i]);
+        }
+        free(arr);
+        arr = tmp_arr;
+    }
+}
+
+template <class T>
+List<HashNode*>::Node *HashTable<T>::find(int key) {
+    int index = HashFunc(key);
+    for (List<HashNode*>::Iterator it = arr[index].begin(); it != arr[index].end(); ++it) {
+        if (it.cur_node->data == key) {
+            return it.cur_node;
+        }
+    }
+    return NULL;
 }
 
 /**
  * Node functions
  */
 
-template <class T, class S, class do_something>
-HashTable<T,S,do_something>::HashNode::~HashNode() {
-    delete key;
+template <class T>
+HashTable<T>::HashNode::~HashNode() {
     delete data;
 }
 
