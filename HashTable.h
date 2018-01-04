@@ -26,7 +26,7 @@ class HashTable {
         ~HashNode();
     };
 
-    List<HashNode*> **list;
+    List<HashNode> *list;
     int size;
     int num_elem;
 
