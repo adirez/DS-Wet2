@@ -56,7 +56,6 @@ private:
 
     //to make them unavailable to users (= delete does not work in g++)
     RankSplayTree &operator=(const RankSplayTree &rank_splay_tree);
-    RankSplayTree(const RankSplayTree &rank_splay_tree);
 
     /**
      * splaying a node to the top of the tree to become a root. in the worst case scenario a node will be splayed through the entire height of the tree
@@ -85,7 +84,7 @@ private:
     void inOrderAuxReverese(Node *cur_node, do_something &func);
     // an aux function for postOrderRemoval function. runs over 'n' nodes and thus run in a complexity of O(n)
     void postOrderAuxRemoval(Node *cur_node);
-    // an aux function for 'find'. runs in an average complexity of log(n).
+    // an aux function for 'isExist'. runs in an average complexity of log(n).
     Node *findAux(Node *cur_node, const T& key, const S &data);
     // joins two trees when the right tree is bigger than the left tree. runs at O(log n) since it runs to the bottom right of the left tree.
     void join(Node *left_tree, Node *right_tree);
@@ -95,9 +94,10 @@ public:
     RankSplayTree();
     // destructor for the tree
     ~RankSplayTree();
-    // find an object in the tree and returns it's pointer. calls findAux and runs in O(log n).
+    // isExist an object in the tree and returns it's pointer. calls findAux and runs in O(log n).
+    RankSplayTree(const RankSplayTree &rank_splay_tree);
     T &find(const T &key, const S &data);
-    // receives an object, sends it to 'find' to get the closest node and inserts it to the tree. after that, splays it to the root. runs in O(log n).
+    // receives an object, sends it to 'isExist' to get the closest node and inserts it to the tree. after that, splays it to the root. runs in O(log n).
     void insert(const T &key, const S &data);
     // receives a key of an object to be removed from the tree. finds it, splays to the root, removes and calls 'join' to merge the trees. runs in O(log n).
     void remove(const T &key, const S &data);
@@ -628,7 +628,7 @@ S RankSplayTree<T, S>::getBestK(int k) {
     totalScore -= getSumData(*k_node->key, *k_node->data);
 
     return totalScore;
-};
+}
 
 /**
  * Node functions

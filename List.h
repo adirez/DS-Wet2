@@ -37,9 +37,9 @@ public:
         friend class HashTable;
 
     public:
-        Iterator(const Iterator &) = default;
-        Iterator &operator=(const Iterator &) = default;
-        ~Iterator() = default;
+        Iterator(const Iterator &) {};
+        Iterator &operator=(const Iterator &) {};
+        ~Iterator() {};
         const T &operator*() const;
         Iterator &operator++();
         Iterator operator++(int);
@@ -76,10 +76,10 @@ public:
 *//*--------------------------------------------------------------------------*/
 
 template <class T>
-List<T>::List() : head(nullptr), last(nullptr), size(0) {}
+List<T>::List() : head(NULL), last(NULL), size(0) {}
 
 template <class T>
-List<T>::List(const List &list) : head(nullptr), last(nullptr), size(0) {
+List<T>::List(const List &list) : head(NULL), last(NULL), size(0) {
     for (Iterator it = list.begin(); it != list.end(); ++it) {
         insert(*it.cur_node->data);
     }
@@ -135,7 +135,7 @@ void List<T>::insert(const T &data, Iterator iterator) {
         return;
     }
     Node *next_node = iterator.cur_node;
-    if (next_node == nullptr) {
+    if (next_node == NULL) {
         new_node->previous = last;
         new_node->next = last->next;
         last->next = new_node;
@@ -143,9 +143,9 @@ void List<T>::insert(const T &data, Iterator iterator) {
         return;
     }
     Node *prev_node = iterator.cur_node->previous;
-    if (prev_node == nullptr) {
+    if (prev_node == NULL) {
         new_node->next = head;
-        new_node->previous = nullptr;
+        new_node->previous = NULL;
         head->previous = new_node;
         head = new_node;
         return;
@@ -169,21 +169,21 @@ void List<T>::remove(Iterator iterator){
     size--;
     if(size == 0){
         delete iterator.cur_node;
-        head = nullptr;
-        last = nullptr;
+        head = NULL;
+        last = NULL;
         return;
     }
     Node *prev_node = iterator.cur_node->previous;
     Node *next_node = iterator.cur_node->next;
 
     if (iterator.cur_node == head) {
-        next_node->previous = nullptr;
+        next_node->previous = NULL;
         delete iterator.cur_node;
         head = next_node;
         return;
     }
     if (iterator.cur_node == last) {
-        prev_node->next = nullptr;
+        prev_node->next = NULL;
         delete iterator.cur_node;
         last = prev_node;
         return;
@@ -260,8 +260,7 @@ void List<T>::sort(const Compare& compare) {
 *//*--------------------------------------------------------------------------*/
 
 template <class T>
-List<T>::Node::Node(const T data) : data(new T(data)), next(nullptr),
-                                    previous(nullptr) {}
+List<T>::Node::Node(const T data) : data(new T(data)), next (NULL), previous (NULL) {}
 
 template <class T>
 List<T>::Node::~Node() {
@@ -284,7 +283,7 @@ List<T>::Iterator::Iterator(const List *list, List::Node *cur_node) :
 
 template <class T>
 const T &List<T>::Iterator::operator*() const {
-    if (cur_node == nullptr){
+    if (cur_node == NULL){
         throw KeyNotFound();
     }
     return *cur_node->data;
@@ -292,7 +291,7 @@ const T &List<T>::Iterator::operator*() const {
 
 template <class T>
 typename List<T>::Iterator &List<T>::Iterator::operator++() {
-    if(this->cur_node == nullptr){
+    if(this->cur_node == NULL){
         return *this;
     }
     cur_node = cur_node->next;
@@ -308,7 +307,7 @@ typename List<T>::Iterator List<T>::Iterator::operator++(int) {
 
 template <class T>
 typename List<T>::Iterator &List<T>::Iterator::operator--() {
-    if(cur_node == nullptr){
+    if(cur_node == NULL){
         cur_node = list->last;
         return *this;
     }

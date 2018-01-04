@@ -5,143 +5,161 @@
 #ifndef WET2_HASHTABLE_H
 #define WET2_HASHTABLE_H
 
-#include <cstdlib>
+#include "Colosseum.h"
 #include "List.h"
+#include "TrainingGroup.h"
+#include "RankSplayTree.h"
 
-template <class T>
 class HashTable {
-
-private:
 
     class HashNode {
     private:
-        int key;
-        T *data;
+        int groupID;
+        bool conquered;
+        TrainingGroup *groupHeapPtr;
+        RankSplayTree<int, int> *gladRankSplayTree;
 
         friend class HashTable;
 
     public:
-        HashNode(const int key, const T data) : key(key), data(data) {};
+        HashNode(int id, TrainingGroup *ptr);
+        HashNode(const HashNode& hashNode);
         ~HashNode();
     };
 
-    List<HashNode*> *arr;
+    List<HashNode*> *list;
     int size;
-    int used;
-
-    int HashFunc(int key);
+    int num_elem;
 
 public:
-    explicit HashTable(int n);
+    HashTable(int n, int* array, TrainingGroup** ptrArr);
     ~HashTable();
-    void insert(int key, T data);
-    void remove(int key, T data);
-    List<HashNode*>::Node *find(int key) {
-
-    };
-
-template <class T>
-HashTable<T>::~HashTable() {
-    for (int i = 0; i < size; ++i) {
-        delete(arr[i]);
-    }
-    free(arr);
-}
-
-template <class T>
-HashTable<T>::HashTable(int n) {
-    used = 0;
-    size = 2 * n;
-    if (n == 0) {
-        size = 1; // so we can always insert a node
-    }
-    arr = (List<HashNode*>*) malloc(size * sizeof(List<HashNode*>));
-    if (arr == NULL) {
-        throw MemoryProblem();
-    }
-}
-
-template <class T>
-int HashTable<T>::HashFunc(int key) {
-    return key % size;
+    bool isExist(int id);
+    bool isConquered(int id);
+    void insertGroup(int id, TrainingGroup* ptr);
+    void insertGladiator(int id, int gladID, int gladScore);
+    void setConquered(int id);
+    TrainingGroup* getGroupHeapPtr(int id);
+    RankSplayTree<int, int>* getGladTree(int id);
 };
 
-template <class T>
-void HashTable<T>::insert(int key, T data) {
-    used++;
-    if (arr[HashFunc(key)] == NULL) {
-        arr[HashFunc(key)] = new List<HashNode*>;
+HashTable::HashTable(int n, int *array, TrainingGroup** ptrArr) {
+    list = new List<HashNode*>[2*n];
+    size = 2*n;
+    int hash;
+    for (int i = 0; i < n; ++i) {
+        HashNode *hashNode = new HashNode(array[i], ptrArr[i+1]);
+        hash = array[i] % size;
+        list[hash].insert(hashNode);
     }
-    arr[HashFunc(key)].insert(data);
+    num_elem = n;
+}
 
-    if (used >= size) {
+HashTable::~HashTable() {
+    delete list;
+}
+
+bool HashTable::isExist(int id) {
+    int hash = id % size;
+    for (List<HashNode*>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
+        HashNode *hashNode = *it;
+        if(hashNode->groupID == id){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HashTable::isConquered(int id) {
+    int hash = id % size;
+    for (List<HashNode*>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
+        HashNode *hashNode = *it;
+        if(hashNode->groupID == id){
+            return hashNode->conquered;
+        }
+    }
+    return false;
+}
+
+void HashTable::insertGroup(int id, TrainingGroup *ptr) {
+    int hash = id % size;
+    for (List<HashNode*>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
+        HashNode *hashNode = *it;
+        if(hashNode->groupID == id){
+            throw KeyAlreadyExists();
+        }
+    }
+    if(num_elem + 1 >= size){
+        List<HashNode*> *list2 = new List<HashNode*>[2*size];
         size *= 2;
-        List<HashNode*> *tmp_arr = (List<HashNode*>*)malloc(size * sizeof(List<HashNode*>));
-        if (tmp_arr == NULL) {
-            throw MemoryProblem();
-        }
-        for (int i = 0; i < size / 2; ++i) {
-            for (List<HashNode*>::Iterator it = arr[i].begin(); it != arr[i].end(); ++it) {
-                tmp_arr[HashFunc(it->cur_node->data)].insert(it.cur_node->data);
-                delete(arr[HashFunc(it.cur_node->data)]);
+        for (int i = 0; i<= size/2; ++i){
+            for (List<HashNode*>::Iterator it = list[i].begin(); it != list[i].end(); ++it) {
+                HashNode *tempNode = new HashNode(**(it.cur_node->data));
+                hash = tempNode->groupID % size;
+                list2[hash].insert(tempNode);
             }
-            delete(arr[i]);
         }
-        free(arr);
-        arr = tmp_arr;
+        delete list;
+        list = list2;
+    }
+    HashNode *hashNode = new HashNode(id, ptr);
+    hash = id % size;
+    list[hash].insert(hashNode);
+    num_elem++;
+}
+
+void HashTable::insertGladiator(int id, int gladID, int gladScore) {
+    int hash = id % size;
+    for (List<HashNode*>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it) {
+        HashNode *hashNode = *it;
+        hashNode->gladRankSplayTree->insert(gladID, gladScore);
     }
 }
 
-template <class T>
-void HashTable<T>::remove(int key, T data) {
-    List<HashNode*>::Node *found_node = find(key);
-    if (found_node == NULL) {
-        throw KeyNotFound();
-    }
-    List<HashNode *>::Iterator it = arr[HashFunc(key)].find(key);
-    arr[HashFunc(key)].remove(it);
-
-    if (arr[HashFunc(key)].getSize() == 0) {
-        delete(arr[HashFunc(key)]);
-    }
-
-    used--;
-    if (used < (size / 2)) {
-        size /= 2;
-        List<HashNode*> *tmp_arr = (List<HashNode*>*)malloc(size * sizeof(List<HashNode*>));
-        if (tmp_arr == NULL) {
-            throw MemoryProblem();
-        }
-        for (int i = 0; i < size / 2; ++i) {
-            for (List<HashNode*>::Iterator it = arr[i].begin(); it != arr[i].end(); ++it) {
-                tmp_arr[HashFunc(it->cur_node->data)].insert(it.cur_node->data);
-                delete(arr[HashFunc(it.cur_node->data)]);
-            }
-            delete(arr[i]);
-        }
-        free(arr);
-        arr = tmp_arr;
-    }
-}
-
-template <class T>
-List<HashNode*>::Node *HashTable<T>::find(int key) {
-    int index = HashFunc(key);
-    for (List<HashNode*>::Iterator it = arr[index].begin(); it != arr[index].end(); ++it) {
-        if (it.cur_node->data == key) {
-            return it.cur_node;
+RankSplayTree<int, int> *HashTable::getGladTree(int id) {
+    int hash = id % size;
+    for (List<HashNode*>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
+        HashNode *hashNode = *it;
+        if(hashNode->groupID == id){
+            return hashNode->gladRankSplayTree;
         }
     }
     return NULL;
 }
 
-/**
- * Node functions
- */
+void HashTable::setConquered(int id) {
+    int hash = id % size;
+    for (List<HashNode*>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
+        HashNode *hashNode = *it;
+        if(hashNode->groupID == id){
+            hashNode->conquered = true;
+        }
+    }
+}
 
-template <class T>
-HashTable<T>::HashNode::~HashNode() {
-    delete data;
+TrainingGroup *HashTable::getGroupHeapPtr(int id) {
+    int hash = id % size;
+    for (List<HashNode*>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
+        HashNode *hashNode = *it;
+        if(hashNode->groupID == id){
+            return hashNode->groupHeapPtr;
+        }
+    }
+    return NULL;
+}
+
+HashTable::HashNode::HashNode(int id, TrainingGroup *ptr) : groupID(id), conquered(false), groupHeapPtr(ptr) {
+    gladRankSplayTree = new RankSplayTree<int, int>();
+}
+
+HashTable::HashNode::~HashNode() {
+    delete gladRankSplayTree;
+}
+
+HashTable::HashNode::HashNode(const HashTable::HashNode &hashNode) : groupID(hashNode.groupID), conquered(hashNode.conquered),
+                                                                     groupHeapPtr(hashNode.groupHeapPtr){
+    delete gladRankSplayTree;
+    gladRankSplayTree = hashNode.gladRankSplayTree;
 }
 
 #endif //WET2_HASHTABLE_H

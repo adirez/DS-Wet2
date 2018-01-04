@@ -10,12 +10,12 @@ class TrainingGroup {
     int ID;
     int idx;
 
+    TrainingGroup& operator=(const TrainingGroup& group);
 public:
     TrainingGroup(int id) : ID(id), idx(-1) {};
     TrainingGroup(int id, int i) : ID(id), idx(i) {};
     TrainingGroup(const TrainingGroup& group) : ID(group.ID), idx(group.idx) {};
-    ~TrainingGroup() = default;
-    TrainingGroup& operator=(const TrainingGroup& group) = delete;
+    ~TrainingGroup() {};
     void setIdx(int i);
     int getIdx();
     void setID(int id);

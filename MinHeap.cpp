@@ -2,6 +2,7 @@
 // Created by adire on 04-Jan-18.
 //
 
+#include <cstdlib>
 #include "MinHeap.h"
 
 MinHeap::MinHeap(int n, int *array) {
@@ -54,7 +55,7 @@ void MinHeap::siftUp(int idx) {
 }
 
 TrainingGroup* MinHeap::insert(int value) {
-    if (num_elem + 1 == size) {
+    if (num_elem + 1 >= size) {
         TrainingGroup **arr2 = new TrainingGroup *[2 * size];
         for (int i = 1; i <= num_elem; ++i) {
             arr2[i] = arr[i];
@@ -77,7 +78,7 @@ void MinHeap::decKey(int idx, int value) {
 }
 
 TrainingGroup* MinHeap::getMin() const {
-    if(num_elem == 0) return nullptr;
+    if(num_elem == 0) return NULL;
     return arr[1];
 }
 
