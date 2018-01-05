@@ -34,7 +34,7 @@ class HashTable {
     friend class Colosseum;
 
 public:
-    HashTable(int n, int* array, TrainingGroup** ptrArr);
+    HashTable(int n, const int* array, TrainingGroup** ptrArr);
     ~HashTable();
     HashTable::HashNode &find(int id);
     void insertGroup(int id, TrainingGroup* ptr);

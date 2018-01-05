@@ -60,8 +60,8 @@ public:
     List &operator=(const List &list);
     Iterator begin() const;
     Iterator end() const;
-    void insert(const T& data, Iterator iterator);
-    void insert(const T& data);
+    void insert(T& data, Iterator iterator);
+    void insert(T& data);
     void remove(Iterator iterator);
     bool operator==(const List& list) const;
     bool operator!=(const List& list) const;
@@ -129,7 +129,7 @@ typename List<T>::Iterator List<T>::end() const {
 }
 
 template <class T>
-void List<T>::insert(const T &data, Iterator iterator) {
+void List<T>::insert(T &data, Iterator iterator) {
     if(iterator.list != this){
         throw KeyNotFound();
     }
@@ -163,7 +163,7 @@ void List<T>::insert(const T &data, Iterator iterator) {
 }
 
 template <class T>
-void List<T>::insert(const T &data) {
+void List<T>::insert(T &data) {
     insert(data, end());
 }
 
@@ -266,7 +266,7 @@ void List<T>::sort(const Compare& compare) {
 *//*--------------------------------------------------------------------------*/
 
 template <class T>
-List<T>::Node::Node(const T data) : data(new T(data)), next(NULL),
+List<T>::Node::Node(T data) : data(new T(data)), next(NULL),
                                     previous(NULL) {}
 
 template <class T>

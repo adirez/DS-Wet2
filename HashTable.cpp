@@ -4,13 +4,14 @@
 
 #include "HashTable.h"
 
-HashTable::HashTable(int n, int *array, TrainingGroup** ptrArr) {
+HashTable::HashTable(int n, const int *array, TrainingGroup** ptrArr) {
     list = new List<HashNode>[2*n];
     size = 2*n;
     int hash = 0;
     for (int i = 0; i < n; ++i) {
         hash = array[i] % size;
-        list[hash].insert(HashNode(array[i], ptrArr[i+1]));
+        HashNode hashNode(array[i], ptrArr[i+1]);
+        list[hash].insert(hashNode);
     }
     num_elem = n;
 }
@@ -32,15 +33,17 @@ void HashTable::insertGroup(int id, TrainingGroup *ptr) {
         size *= 2;
         for (int i = 0; i<= size/2; ++i){
             for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
-                hash = (*(it.cur_node->data)).groupID % size;
-                list2[hash].insert(HashNode(*(it.cur_node->data)));
+                HashNode hashNode(*(it.cur_node->data));
+                hash = hashNode.groupID % size;
+                list2[hash].insert(hashNode);
             }
         }
         delete[] list;
         list = list2;
     }
     hash = id % size;
-    list[hash].insert(HashNode(id, ptr));
+    HashNode hashNode(id, ptr);
+    list[hash].insert(hashNode);
     num_elem++;
 }
 
