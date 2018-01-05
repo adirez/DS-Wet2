@@ -38,7 +38,7 @@ public:
     ~HashTable();
     HashTable::HashNode &find(int id);
     void insertGroup(int id, TrainingGroup* ptr);
-    void insertGladiator(HashNode *hashNode, int gladID, int gladScore);
+    void insertGladiator(HashNode &hashNode, int gladID, int gladScore);
 };
 
 

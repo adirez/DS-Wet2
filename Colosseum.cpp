@@ -13,16 +13,14 @@ Colosseum::Colosseum(int n, int *trainingGroupsIDs) {
 
 void Colosseum::addTrainingGroup(int trainingGroupID) {
     if(trainingGroupID < 0) throw InvalidParameter();
-    HashTable::HashNode* hashNode = hashTable->find(trainingGroupID);
-    if(hashNode != NULL) throw KeyAlreadyExists();
+    HashTable::HashNode hashNode = hashTable->find(trainingGroupID);
     TrainingGroup* tempPtr = minHeap->insert(trainingGroupID);
     hashTable->insertGroup(trainingGroupID, tempPtr);
 }
 
 void Colosseum::addGladiator(int gladiatorID, int score, int trainingGroup) {
     if(gladiatorID < 0 || score < 0 || trainingGroup < 0) throw InvalidParameter();
-    HashTable::HashNode* hashNode = hashTable->find(trainingGroup);
-    if(hashNode == NULL) throw KeyNotFound();
+    HashTable::HashNode hashNode = hashTable->find(trainingGroup);
     gladTree->insert(gladiatorID, -1);
     hashTable->insertGladiator(hashNode, gladiatorID, score);
 }
@@ -33,25 +31,24 @@ void Colosseum::trainingGroupFight(int trainingGroup1, int trainingGroup2, int k
     }
     if (trainingGroup1 == trainingGroup2) throw Failure();
     int bestK1, bestK2;
-    HashTable::HashNode* hashNode1 = hashTable->find(trainingGroup1);
-    HashTable::HashNode* hashNode2 = hashTable->find(trainingGroup2);
+    HashTable::HashNode hashNode1 = hashTable->find(trainingGroup1);
+    HashTable::HashNode hashNode2 = hashTable->find(trainingGroup2);
 
-    if(hashNode1 == NULL || hashNode2 == NULL) throw KeyNotFound();
-    if (hashNode1->gladRankSplayTree->getSize() < k1 || hashNode2->gladRankSplayTree->getSize() < k2 ||
-            hashNode1->conquered || hashNode2->conquered){
+    if (hashNode1.gladRankSplayTree->getSize() < k1 || hashNode2.gladRankSplayTree->getSize() < k2 ||
+            hashNode1.conquered || hashNode2.conquered){
         throw Failure();
     }
 
-    bestK1 = hashNode1->gladRankSplayTree->getBestK(k1);
-    bestK2 = hashNode2->gladRankSplayTree->getBestK(k2);
+    bestK1 = hashNode1.gladRankSplayTree->getBestK(k1);
+    bestK2 = hashNode2.gladRankSplayTree->getBestK(k2);
     if((bestK1 == bestK2 && trainingGroup1 < trainingGroup2) || bestK1 > bestK2){
-        hashNode2->conquered = true;
-        int heapIdx = hashNode2->groupHeapPtr->getIdx();
+        hashNode2.conquered = true;
+        int heapIdx = hashNode2.groupHeapPtr->getIdx();
         minHeap->decKey(heapIdx, -1);
         minHeap->delMin();
     } else if((bestK1 == bestK2 && trainingGroup1 > trainingGroup2) || bestK1 < bestK2){
-        hashNode1->conquered = true;
-        int heapIdx = hashNode1->groupHeapPtr->getIdx();
+        hashNode1.conquered = true;
+        int heapIdx = hashNode1.groupHeapPtr->getIdx();
         minHeap->decKey(heapIdx, -1);
         minHeap->delMin();
     }
