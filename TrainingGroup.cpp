@@ -7,7 +7,7 @@
 TrainingGroup::TrainingGroup() : ID(0), idx(0) {}
 
 TrainingGroup::TrainingGroup(int id) {
-    if(ID < 0){
+    if(id < 0){
         throw InvalidParameter();
     }
     ID = id;
@@ -15,7 +15,7 @@ TrainingGroup::TrainingGroup(int id) {
 }
 
 TrainingGroup::TrainingGroup(int id, int i) {
-    if(ID < 0){
+    if(id < 0){
         throw InvalidParameter();
     }
     ID = id;

@@ -46,7 +46,7 @@ public:
             return *this;
         }
         ~Iterator() {};
-        const T &operator*() const;
+        T &operator*();
         Iterator &operator++();
         Iterator operator++(int);
         Iterator &operator--();
@@ -289,7 +289,7 @@ List<T>::Iterator::Iterator(const List *list, List::Node *cur_node) :
         cur_node(cur_node) {}
 
 template <class T>
-const T &List<T>::Iterator::operator*() const {
+T &List<T>::Iterator::operator*() {
     if (cur_node == NULL){
         throw KeyNotFound();
     }

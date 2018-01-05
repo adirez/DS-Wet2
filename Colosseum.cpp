@@ -12,6 +12,7 @@ Colosseum::Colosseum(int n, int *trainingGroupsIDs) {
 }
 
 void Colosseum::addTrainingGroup(int trainingGroupID) {
+    if(trainingGroupID < 0) throw InvalidParameter();
     HashTable::HashNode* hashNode = hashTable->find(trainingGroupID);
     if(hashNode != NULL) throw KeyAlreadyExists();
     TrainingGroup* tempPtr = minHeap->insert(trainingGroupID);
@@ -19,7 +20,7 @@ void Colosseum::addTrainingGroup(int trainingGroupID) {
 }
 
 void Colosseum::addGladiator(int gladiatorID, int score, int trainingGroup) {
-    if(gladiatorID < 0 || score < 0) throw InvalidParameter();
+    if(gladiatorID < 0 || score < 0 || trainingGroup < 0) throw InvalidParameter();
     HashTable::HashNode* hashNode = hashTable->find(trainingGroup);
     if(hashNode == NULL) throw KeyNotFound();
     gladTree->insert(gladiatorID, -1);

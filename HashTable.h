@@ -23,11 +23,11 @@ class HashTable {
 
     public:
         HashNode(int id, TrainingGroup *ptr);
-        HashNode(const HashNode& hashNode);
+        HashNode(HashNode& hashNode);
         ~HashNode();
     };
 
-    List<HashNode*> *list;
+    List<HashNode> *list;
     int size;
     int num_elem;
 
@@ -36,7 +36,7 @@ class HashTable {
 public:
     HashTable(int n, int* array, TrainingGroup** ptrArr);
     ~HashTable();
-    HashTable::HashNode* find(int id);
+    HashTable::HashNode &find(int id);
     void insertGroup(int id, TrainingGroup* ptr);
     void insertGladiator(HashNode *hashNode, int gladID, int gladScore);
 };
