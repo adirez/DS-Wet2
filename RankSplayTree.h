@@ -89,13 +89,14 @@ private:
     // joins two trees when the right tree is bigger than the left tree. runs at O(log n) since it runs to the bottom right of the left tree.
     void join(Node *left_tree, Node *right_tree);
 
+    RankSplayTree(const RankSplayTree &rank_splay_tree);
+
 public:
     // an empty constructor for the tree
     RankSplayTree();
     // destructor for the tree
     ~RankSplayTree();
     // isExist an object in the tree and returns it's pointer. calls findAux and runs in O(log n).
-    RankSplayTree(const RankSplayTree &rank_splay_tree);
     T &find(const T &key, const S &data);
     // receives an object, sends it to 'isExist' to get the closest node and inserts it to the tree. after that, splays it to the root. runs in O(log n).
     void insert(const T &key, const S &data);
@@ -147,7 +148,7 @@ T &RankSplayTree<T, S>::find(const T &key, const S &data) {
 template<class T, class S>
 void RankSplayTree<T, S>::insert(const T &key, const S &data) {
     Node *found_node = findAux(root, key, data);
-    if (found_node != NULL && key == *found_node->key) {
+    if (found_node != NULL && data == *found_node->data) {
         throw KeyAlreadyExists();
     }
     Node *to_insert = new Node(key, data, found_node);
@@ -531,16 +532,16 @@ void RankSplayTree<T, S>::postOrderAuxRemoval(RankSplayTree::Node *cur_node) {
 template<class T, class S>
 typename RankSplayTree<T, S>::Node *RankSplayTree<T, S>::findAux(RankSplayTree::Node *cur_node, const T& key, const S &data) {
     if (cur_node == NULL) return NULL;
-    if (key == *cur_node->key) {
+    if (data == *cur_node->data) {
         return cur_node;
     }
-    if (data > *cur_node->data || (data == *cur_node->data && key < *cur_node->key)) {
+    if (data > *cur_node->data) {
         if (cur_node->right_son == NULL) {
             return cur_node;
         }
         return findAux(cur_node->right_son, key, data);
     }
-    if (data < *cur_node->data || (data == *cur_node->data && key > *cur_node->key)) {
+    if (data < *cur_node->data) {
         if (cur_node->left_son == NULL) {
             return cur_node;
         }
@@ -555,7 +556,7 @@ typename RankSplayTree<T, S>::Node *RankSplayTree<T, S>::select(int k) {
         return NULL;
     }
     return selectAux(k, root);
-};
+}
 
 template<class T, class S>
 typename RankSplayTree<T, S>::Node *RankSplayTree<T, S>::selectAux(int k, Node *node) {
@@ -591,7 +592,7 @@ int RankSplayTree<T, S>::getRank(const T &key, const S &data) {
         tmp_node = tmp_node->parent;
     }
     return rank;
-};
+}
 
 template<class T, class S>
 S RankSplayTree<T, S>::getSumData(const T &key, const S &data) {
@@ -616,7 +617,7 @@ S RankSplayTree<T, S>::getSumData(const T &key, const S &data) {
         tmp_node = tmp_node->parent;
     }
     return totalScore;
-};
+}
 
 template<class T, class S>
 S RankSplayTree<T, S>::getBestK(int k) {

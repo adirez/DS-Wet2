@@ -16,6 +16,9 @@ MinHeap::MinHeap(int n, int *array) {
 }
 
 MinHeap::~MinHeap() {
+    for (int i = 1; i <= num_elem; ++i) {
+        delete arr[i];
+    }
     delete[] arr;
 }
 

@@ -23,7 +23,7 @@ HashTable::~HashTable() {
 void HashTable::insertGroup(int id, TrainingGroup *ptr) {
     int hash = id % size;
     for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
-        HashNode hashNode = *it;
+        HashNode &hashNode = *it;
         if(hashNode.groupID == id){
             throw KeyAlreadyExists();
         }
@@ -31,9 +31,9 @@ void HashTable::insertGroup(int id, TrainingGroup *ptr) {
     if(num_elem + 1 >= size){
         List<HashNode> *list2 = new List<HashNode>[2*size];
         size *= 2;
-        for (int i = 0; i<= size/2; ++i){
-            for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
-                HashNode hashNode(*(it.cur_node->data));
+        for (int i = 0; i < size/2; ++i){
+            for (List<HashNode>::Iterator it = list[i].begin(); it != list[i].end(); ++it){
+                HashNode &hashNode(*(it.cur_node->data));
                 hash = hashNode.groupID % size;
                 list2[hash].insert(hashNode);
             }
@@ -74,7 +74,9 @@ HashTable::HashNode::~HashNode() {
 
 HashTable::HashNode::HashNode(HashTable::HashNode &hashNode) : groupID(hashNode.groupID), conquered(hashNode.conquered),
                                                                groupHeapPtr(hashNode.groupHeapPtr){
-    delete gladRankSplayTree;
+    if(this == &hashNode){
+        return;
+    }
     gladRankSplayTree = hashNode.gladRankSplayTree;
     hashNode.gladRankSplayTree = NULL;
 }
