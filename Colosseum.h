@@ -10,7 +10,6 @@
 class Colosseum {
     MinHeap *minHeap;
     HashTable *hashTable;
-    RankSplayTree<int, int> *rankSplayTree;
     RankSplayTree<int, int> *gladTree;
 
 public:

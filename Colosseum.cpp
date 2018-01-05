@@ -5,7 +5,6 @@
 #include "Colosseum.h"
 
 Colosseum::Colosseum(int n, int *trainingGroupsIDs) {
-    rankSplayTree = new RankSplayTree<int, int>();
     gladTree = new RankSplayTree<int, int>();
     minHeap = new MinHeap(n, trainingGroupsIDs);
     TrainingGroup** ptrArr = minHeap->makeHeap();
@@ -13,43 +12,38 @@ Colosseum::Colosseum(int n, int *trainingGroupsIDs) {
 }
 
 void Colosseum::addTrainingGroup(int trainingGroupID) {
-    hashTable->isExist(trainingGroupID);
+    HashTable::HashNode* hashNode = hashTable->find(trainingGroupID);
+    if(hashNode != NULL) throw KeyAlreadyExists();
     TrainingGroup* tempPtr = minHeap->insert(trainingGroupID);
     hashTable->insertGroup(trainingGroupID, tempPtr);
 }
 
 void Colosseum::addGladiator(int gladiatorID, int score, int trainingGroup) {
-    if(hashTable->isExist(trainingGroup)) throw KeyNotFound();
+    HashTable::HashNode* hashNode = hashTable->find(trainingGroup);
+    if(hashNode == NULL) throw KeyNotFound();
     gladTree->insert(gladiatorID, -1);
-    hashTable->insertGladiator(trainingGroup, gladiatorID, score);
+    hashTable->insertGladiator(hashNode, gladiatorID, score);
 }
 
 void Colosseum::trainingGroupFight(int trainingGroup1, int trainingGroup2, int k1, int k2) {
     if(trainingGroup1 == trainingGroup2){
         throw InvalidParameter();
     }
-    if(!hashTable->isExist(trainingGroup1) || !hashTable->isExist(trainingGroup2)) throw KeyNotFound();
-    if(hashTable->isConquered(trainingGroup1) || hashTable->isConquered(trainingGroup2)) throw InvalidParameter();
-    RankSplayTree<int, int> *gladTree1 = hashTable->getGladTree(trainingGroup1);
-    RankSplayTree<int, int> *gladTree2 = hashTable->getGladTree(trainingGroup2);
-    if(gladTree1->getBestK(k1) > gladTree2->getBestK(k2)){
-        hashTable->setConquered(trainingGroup2);
-        int heapIdx = hashTable->getGroupHeapPtr(trainingGroup2)->getIdx();
+    HashTable::HashNode* hashNode1 = hashTable->find(trainingGroup1);
+    HashTable::HashNode* hashNode2 = hashTable->find(trainingGroup2);
+    if(hashNode1 == NULL || hashNode2 == NULL) throw KeyNotFound();
+    if(hashNode1->conquered || hashNode2->conquered) throw InvalidParameter();
+    int bestK1, bestK2;
+    bestK1 = hashNode1->gladRankSplayTree->getBestK(k1);
+    bestK2 = hashNode2->gladRankSplayTree->getBestK(k2);
+    if((bestK1 == bestK2 && trainingGroup1 < trainingGroup2) || bestK1 > bestK2){
+        hashNode2->conquered = true;
+        int heapIdx = hashNode2->groupHeapPtr->getIdx();
         minHeap->decKey(heapIdx, -1);
         minHeap->delMin();
-    } else if(gladTree1->getBestK(k1) < gladTree2->getBestK(k2)){
-        hashTable->setConquered(trainingGroup1);
-        int heapIdx = hashTable->getGroupHeapPtr(trainingGroup1)->getIdx();
-        minHeap->decKey(heapIdx, -1);
-        minHeap->delMin();
-    } else if(trainingGroup1 < trainingGroup2){
-        hashTable->setConquered(trainingGroup2);
-        int heapIdx = hashTable->getGroupHeapPtr(trainingGroup2)->getIdx();
-        minHeap->decKey(heapIdx, -1);
-        minHeap->delMin();
-    } else {
-        hashTable->setConquered(trainingGroup1);
-        int heapIdx = hashTable->getGroupHeapPtr(trainingGroup1)->getIdx();
+    } else if((bestK1 == bestK2 && trainingGroup1 > trainingGroup2) || bestK1 < bestK2){
+        hashNode1->conquered = true;
+        int heapIdx = hashNode1->groupHeapPtr->getIdx();
         minHeap->decKey(heapIdx, -1);
         minHeap->delMin();
     }
@@ -61,7 +55,6 @@ int Colosseum::getMinTrainingGroup() {
 }
 
 Colosseum::~Colosseum() {
-    delete rankSplayTree;
     delete gladTree;
     delete hashTable;
     delete minHeap;

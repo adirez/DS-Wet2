@@ -19,6 +19,7 @@ class HashTable {
         RankSplayTree<int, int> *gladRankSplayTree;
 
         friend class HashTable;
+        friend class Colosseum;
 
     public:
         HashNode(int id, TrainingGroup *ptr);
@@ -26,20 +27,18 @@ class HashTable {
         ~HashNode();
     };
 
-    List<HashNode> *list;
+    List<HashNode*> *list;
     int size;
     int num_elem;
+
+    friend class Colosseum;
 
 public:
     HashTable(int n, int* array, TrainingGroup** ptrArr);
     ~HashTable();
-    bool isExist(int id);
-    bool isConquered(int id);
+    HashTable::HashNode* find(int id);
     void insertGroup(int id, TrainingGroup* ptr);
-    void insertGladiator(int id, int gladID, int gladScore);
-    void setConquered(int id);
-    TrainingGroup* getGroupHeapPtr(int id);
-    RankSplayTree<int, int>* getGladTree(int id);
+    void insertGladiator(HashNode *hashNode, int gladID, int gladScore);
 };
 
 

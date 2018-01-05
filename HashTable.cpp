@@ -5,12 +5,13 @@
 #include "HashTable.h"
 
 HashTable::HashTable(int n, int *array, TrainingGroup** ptrArr) {
-    list = new List<HashNode>[2*n];
+    list = new List<HashNode*>[2*n];
     size = 2*n;
     int hash = 0;
     for (int i = 0; i < n; ++i) {
         hash = array[i] % size;
-        list[hash].insert(HashNode(array[i], ptrArr[i+1]));
+        HashNode *hashNode = new HashNode(array[i], ptrArr[i+1]);
+        list[hash].insert(hashNode);
     }
     num_elem = n;
 }
@@ -19,89 +20,43 @@ HashTable::~HashTable() {
     delete[] list;
 }
 
-
-bool HashTable::isExist(int id) {
-    int hash = id % size;
-    for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
-        HashNode hashNode = *it;
-        if(hashNode.groupID == id){
-            return true;
-        }
-    }
-    return false;
-}
-
-bool HashTable::isConquered(int id) {
-    int hash = id % size;
-    for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
-        HashNode hashNode = *it;
-        if(hashNode.groupID == id){
-            return hashNode.conquered;
-        }
-    }
-    return false;
-}
-
 void HashTable::insertGroup(int id, TrainingGroup *ptr) {
     int hash = id % size;
-    for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
-        HashNode hashNode = *it;
-        if(hashNode.groupID == id){
+    for (List<HashNode*>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
+        HashNode *hashNode = *it;
+        if(hashNode->groupID == id){
             throw KeyAlreadyExists();
         }
     }
     if(num_elem + 1 >= size){
-        List<HashNode> *list2 = new List<HashNode>[2*size];
+        List<HashNode*> *list2 = new List<HashNode*>[2*size];
         size *= 2;
         for (int i = 0; i<= size/2; ++i){
-            for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
-                hash = (*(it.cur_node->data)).groupID % size;
-                list2[hash].insert(HashNode(*(it.cur_node->data)));
+            for (List<HashNode*>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it){
+                HashNode *hashNode = new HashNode(**(it.cur_node->data));
+                hash = hashNode->groupID % size;
+                list2[hash].insert(hashNode);
             }
         }
-        delete list;
+        delete[] list;
         list = list2;
     }
     hash = id % size;
-    list[hash].insert(HashNode(id, ptr));
+    HashNode *hashNode = new HashNode(id, ptr);
+    list[hash].insert(hashNode);
     num_elem++;
 }
 
-void HashTable::insertGladiator(int id, int gladID, int gladScore) {
-    int hash = id % size;
-    for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it) {
-        HashNode hashNode = *it;
-        hashNode.gladRankSplayTree->insert(gladID, gladScore);
-    }
+void HashTable::insertGladiator(HashNode *hashNode, int gladID, int gladScore) {
+    hashNode->gladRankSplayTree->insert(gladID, gladScore);
 }
 
-RankSplayTree<int, int> *HashTable::getGladTree(int id) {
+HashTable::HashNode *HashTable::find(int id) {
     int hash = id % size;
-    for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it) {
-        HashNode hashNode = *it;
-        if(hashNode.groupID == id){
-            return hashNode.gladRankSplayTree;
-        }
-    }
-    return NULL;
-}
-
-void HashTable::setConquered(int id) {
-    int hash = id % size;
-    for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it) {
-        HashNode hashNode = *it;
-        if(hashNode.groupID == id){
-            hashNode.conquered = true;
-        }
-    }
-}
-
-TrainingGroup *HashTable::getGroupHeapPtr(int id) {
-    int hash = id % size;
-    for (List<HashNode>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it) {
-        HashNode hashNode = *it;
-        if(hashNode.groupID == id){
-            return hashNode.groupHeapPtr;
+    for (List<HashNode*>::Iterator it = list[hash].begin(); it != list[hash].end(); ++it) {
+        HashNode *hashNode = *it;
+        if(hashNode->groupID == id){
+            return hashNode;
         }
     }
     return NULL;
