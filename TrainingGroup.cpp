@@ -4,6 +4,22 @@
 
 #include "TrainingGroup.h"
 
+TrainingGroup::TrainingGroup(int id) {
+    if(ID < 0){
+        throw InvalidParameter();
+    }
+    ID = id;
+    idx = -1;
+}
+
+TrainingGroup::TrainingGroup(int id, int i) {
+    if(ID < 0){
+        throw InvalidParameter();
+    }
+    ID = id;
+    idx = i;
+}
+
 void TrainingGroup::setIdx(int i) {
     idx = i;
 }

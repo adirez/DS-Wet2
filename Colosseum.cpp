@@ -19,6 +19,7 @@ void Colosseum::addTrainingGroup(int trainingGroupID) {
 }
 
 void Colosseum::addGladiator(int gladiatorID, int score, int trainingGroup) {
+    if(gladiatorID < 0 || score < 0) throw InvalidParameter();
     HashTable::HashNode* hashNode = hashTable->find(trainingGroup);
     if(hashNode == NULL) throw KeyNotFound();
     gladTree->insert(gladiatorID, -1);
@@ -26,14 +27,20 @@ void Colosseum::addGladiator(int gladiatorID, int score, int trainingGroup) {
 }
 
 void Colosseum::trainingGroupFight(int trainingGroup1, int trainingGroup2, int k1, int k2) {
-    if(trainingGroup1 == trainingGroup2){
+    if(trainingGroup1 < 0 || trainingGroup2 < 0 || k1 <= 0 || k2 <= 0){
         throw InvalidParameter();
     }
+    if (trainingGroup1 == trainingGroup2) throw Failure();
+    int bestK1, bestK2;
     HashTable::HashNode* hashNode1 = hashTable->find(trainingGroup1);
     HashTable::HashNode* hashNode2 = hashTable->find(trainingGroup2);
+
     if(hashNode1 == NULL || hashNode2 == NULL) throw KeyNotFound();
-    if(hashNode1->conquered || hashNode2->conquered) throw InvalidParameter();
-    int bestK1, bestK2;
+    if (hashNode1->gladRankSplayTree->getSize() < k1 || hashNode2->gladRankSplayTree->getSize() < k2 ||
+            hashNode1->conquered || hashNode2->conquered){
+        throw Failure();
+    }
+
     bestK1 = hashNode1->gladRankSplayTree->getBestK(k1);
     bestK2 = hashNode2->gladRankSplayTree->getBestK(k2);
     if((bestK1 == bestK2 && trainingGroup1 < trainingGroup2) || bestK1 > bestK2){
