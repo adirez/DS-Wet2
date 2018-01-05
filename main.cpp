@@ -7,19 +7,17 @@ using std::endl;
 int main() {
 
     int arr[3];
-    arr[0] = 2;
-    arr[1] = 7;
-    arr[2] = 4;
+    arr[0] = 1;
+    arr[1] = 3;
+    arr[2] = 5;
 
-
-    Colosseum colosseum(3, arr);
-    colosseum.addTrainingGroup(3);
-    colosseum.addTrainingGroup(1);
-    colosseum.addGladiator(11, 40, 3);
-    colosseum.addGladiator(22, 30, 3);
-    colosseum.addGladiator(33, 12, 3);
-    colosseum.addGladiator(44, 1, 3);
-    colosseum.addTrainingGroup(6);
+    MinHeap *minHeap = new MinHeap(3, arr);
+/*    minHeap->insert(0);
+    minHeap->decKey(1, -1);
+    minHeap->delMin();
+    minHeap->decKey(3, -1);
+    minHeap->delMin();*/
+    delete minHeap;
 
     return 0;
 }

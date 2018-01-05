@@ -11,7 +11,6 @@ class TrainingGroup {
     int ID;
     int idx;
 
-    TrainingGroup& operator=(const TrainingGroup& group);
 public:
     TrainingGroup();
     TrainingGroup(int id);
@@ -27,6 +26,5 @@ public:
     bool operator<=(const TrainingGroup& rGroup) const;
     bool operator>=(const TrainingGroup& rGroup) const;
 };
-
 
 #endif //WET2_TRAININGGROUP_H

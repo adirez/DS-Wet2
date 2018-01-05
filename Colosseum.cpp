@@ -13,14 +13,20 @@ Colosseum::Colosseum(int n, int *trainingGroupsIDs) {
 
 void Colosseum::addTrainingGroup(int trainingGroupID) {
     if(trainingGroupID < 0) throw InvalidParameter();
-    HashTable::HashNode hashNode = hashTable->find(trainingGroupID);
-    TrainingGroup* tempPtr = minHeap->insert(trainingGroupID);
-    hashTable->insertGroup(trainingGroupID, tempPtr);
+    try {
+        hashTable->find(trainingGroupID);
+    } catch (KeyNotFound &e) {
+        TrainingGroup* tempPtr = minHeap->insert(trainingGroupID);
+        hashTable->insertGroup(trainingGroupID, tempPtr);
+        return;
+    }
+
+    throw KeyAlreadyExists();
 }
 
 void Colosseum::addGladiator(int gladiatorID, int score, int trainingGroup) {
     if(gladiatorID < 0 || score < 0 || trainingGroup < 0) throw InvalidParameter();
-    HashTable::HashNode hashNode = hashTable->find(trainingGroup);
+    HashTable::HashNode &hashNode = hashTable->find(trainingGroup);
     gladTree->insert(gladiatorID, -1);
     hashTable->insertGladiator(hashNode, gladiatorID, score);
 }
@@ -31,8 +37,8 @@ void Colosseum::trainingGroupFight(int trainingGroup1, int trainingGroup2, int k
     }
     if (trainingGroup1 == trainingGroup2) throw Failure();
     int bestK1, bestK2;
-    HashTable::HashNode hashNode1 = hashTable->find(trainingGroup1);
-    HashTable::HashNode hashNode2 = hashTable->find(trainingGroup2);
+    HashTable::HashNode &hashNode1 = hashTable->find(trainingGroup1);
+    HashTable::HashNode &hashNode2 = hashTable->find(trainingGroup2);
 
     if (hashNode1.gladRankSplayTree->getSize() < k1 || hashNode2.gladRankSplayTree->getSize() < k2 ||
             hashNode1.conquered || hashNode2.conquered){

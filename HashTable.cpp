@@ -73,8 +73,8 @@ HashTable::HashNode::~HashNode() {
 }
 
 HashTable::HashNode::HashNode(HashTable::HashNode &hashNode) : groupID(hashNode.groupID), conquered(hashNode.conquered),
-                                                               groupHeapPtr(hashNode.groupHeapPtr){
-    delete gladRankSplayTree;
+                                                               groupHeapPtr(hashNode.groupHeapPtr) {
+    //delete gladRankSplayTree;
     gladRankSplayTree = hashNode.gladRankSplayTree;
     hashNode.gladRankSplayTree = NULL;
 }
