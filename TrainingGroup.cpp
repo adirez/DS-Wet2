@@ -4,6 +4,8 @@
 
 #include "TrainingGroup.h"
 
+TrainingGroup::TrainingGroup() : ID(0), idx(0) {}
+
 TrainingGroup::TrainingGroup(int id) {
     if(ID < 0){
         throw InvalidParameter();

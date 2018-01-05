@@ -13,6 +13,7 @@ class TrainingGroup {
 
     TrainingGroup& operator=(const TrainingGroup& group);
 public:
+    TrainingGroup();
     TrainingGroup(int id);
     TrainingGroup(int id, int i);
     TrainingGroup(const TrainingGroup& group) : ID(group.ID), idx(group.idx) {};

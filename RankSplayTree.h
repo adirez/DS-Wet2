@@ -21,9 +21,9 @@ private:
      */
     class Node {
     private:
+        T *key;
         S *data;
         S *sumData;
-        T *key;
         int rank;
         Node *parent;
         Node *right_son;
@@ -635,8 +635,8 @@ S RankSplayTree<T, S>::getBestK(int k) {
  */
 
 template<class T, class S>
-RankSplayTree<T, S>::Node::Node(const T key, const S data, Node *parent) : rank(1), key(new T(key)), data(new S(data)), sumData(new S(data)),
-                                                                           parent(parent), right_son(NULL), left_son(NULL) {}
+RankSplayTree<T, S>::Node::Node(const T key, const S data, Node *parent) : key(new T(key)), data(new S(data)), sumData(new S(data)),
+                                                                           rank(1), parent(parent), right_son(NULL), left_son(NULL) {}
 
 template<class T, class S>
 RankSplayTree<T, S>::Node::~Node() {
