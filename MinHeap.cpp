@@ -19,7 +19,7 @@ MinHeap::~MinHeap() {
     for (int i = 1; i <= num_elem; ++i) {
         delete arr[i];
     }
-    delete arr;
+    delete[] arr;
 }
 
 TrainingGroup** MinHeap::makeHeap() {
