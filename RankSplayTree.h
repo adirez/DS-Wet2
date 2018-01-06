@@ -10,6 +10,7 @@
 /**
  * a generic class for a SplayTree, with a nested class for a node. the class holds a pointer to the root of the tree, to the minimum and maximum nodes
  * and an integer to hold the tree size.
+ * the tree's size is O(m) as the number of gladiators.
  */
 template<class T, class S>
 class RankSplayTree {
