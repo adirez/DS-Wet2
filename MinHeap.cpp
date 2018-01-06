@@ -16,7 +16,8 @@ MinHeap::MinHeap(int n, int *array) {
 
 MinHeap::~MinHeap() {
     for (int i = 1; i <= num_elem; ++i) {
-        delete(arr[i]);
+        TrainingGroup *to_delete = arr[i];
+        delete to_delete;
     }
     delete[] arr;
 }
@@ -63,8 +64,10 @@ TrainingGroup* MinHeap::insert(int value) {
             arr2[i] = arr[i];
             arr[i] = NULL;
         }
-        delete[] arr;
+        TrainingGroup** to_delete = arr;
+        delete[] to_delete;
         arr = arr2;
+        size *= 2;
     }
     TrainingGroup* elem = new TrainingGroup(value, num_elem + 1);
     arr[num_elem + 1] = elem;
@@ -103,7 +106,8 @@ void MinHeap::delMin() {
             arr2[i] = arr[i];
             arr[i] = NULL;
         }
-        delete[] arr;
+        TrainingGroup** to_delete_arr = arr;
+        delete[] to_delete_arr;
         arr = arr2;
         size /= 2;
     }

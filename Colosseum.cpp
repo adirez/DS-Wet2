@@ -5,6 +5,9 @@
 #include "Colosseum.h"
 
 Colosseum::Colosseum(int n, int *trainingGroupsIDs) {
+    for (int i = 0; i < n; ++i) {
+        if (trainingGroupsIDs[i] < 0) throw InvalidParameter();
+    }
     gladTree = new RankSplayTree<int, int>();
     minHeap = new MinHeap(n, trainingGroupsIDs);
     TrainingGroup** ptrArr = minHeap->makeHeap();
