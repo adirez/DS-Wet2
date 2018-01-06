@@ -11,6 +11,7 @@
 class ColosseumException : public std::exception{};
 
 class EmptyTree : public ColosseumException{};
+class EmptyHeap : public ColosseumException{};
 class KeyAlreadyExists : public ColosseumException{};
 class KeyNotFound : public ColosseumException{};
 class InvalidParameter : public ColosseumException{};

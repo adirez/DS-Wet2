@@ -1,22 +1,20 @@
-#include <iostream>
-#include "Colosseum.h"
+//
+// Created by adire on 06-Jan-18.
+//
 
-using std::cout;
-using std::endl;
+#include "MinHeap.h"
 
 int main() {
 
-    int arr[3];
-    arr[0] = 1;
-    arr[1] = 3;
-    arr[2] = 5;
-
-    MinHeap minHeap(3, arr);
+    int arr[]={2,1};
+    MinHeap minHeap(2, arr);
+    minHeap.makeHeap();
     minHeap.insert(0);
-    minHeap.decKey(1, -1);
-    minHeap.delMin();
     minHeap.decKey(3, -1);
     minHeap.delMin();
+    minHeap.decKey(2, -1);
+    minHeap.delMin();
+    minHeap.insert(3);
 
     return 0;
 }

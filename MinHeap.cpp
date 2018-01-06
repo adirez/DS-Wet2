@@ -7,17 +7,16 @@
 
 MinHeap::MinHeap(int n, int *array) {
     arr = new TrainingGroup*[2*n];
-    size = 2*n;
-    for (int i = 1; i <= n ; ++i) {
-        TrainingGroup* elem = new TrainingGroup(array[i-1], i);
-        arr[i] = elem;
+    for (int i = 1; i <= n; ++i) {
+        arr[i] = new TrainingGroup(array[i-1], i);
     }
+    size = 2*n;
     num_elem = n;
 }
 
 MinHeap::~MinHeap() {
     for (int i = 1; i <= num_elem; ++i) {
-        delete arr[i];
+        delete(arr[i]);
     }
     delete[] arr;
 }
@@ -59,15 +58,15 @@ void MinHeap::siftUp(int idx) {
 
 TrainingGroup* MinHeap::insert(int value) {
     if (num_elem + 1 >= size) {
-        TrainingGroup **arr2 = new TrainingGroup *[2 * size];
+        TrainingGroup** arr2 = new TrainingGroup*[2*size];
         for (int i = 1; i <= num_elem; ++i) {
             arr2[i] = arr[i];
+            arr[i] = NULL;
         }
         delete[] arr;
         arr = arr2;
-        size *= 2;
     }
-    TrainingGroup *elem = new TrainingGroup(value, num_elem + 1);
+    TrainingGroup* elem = new TrainingGroup(value, num_elem + 1);
     arr[num_elem + 1] = elem;
     num_elem++;
     siftUp(num_elem);
@@ -86,24 +85,26 @@ TrainingGroup* MinHeap::getMin() const {
 }
 
 void MinHeap::delMin() {
-    if(num_elem == 1){
+    if (num_elem == 0) throw EmptyHeap();
+    if (num_elem == 1){
         delete arr[1];
         num_elem--;
         return;
     }
-    if(num_elem-1 <= size / 4){
-        TrainingGroup **arr2 = new TrainingGroup *[size / 2];
+    swap(1, num_elem);
+    delete(arr[num_elem]);
+    num_elem--;
+    siftDown(1);
+    if(num_elem <= size /4){
+        TrainingGroup** arr2 = new TrainingGroup*[size /2];
         for (int i = 1; i <= num_elem; ++i) {
             arr2[i] = arr[i];
+            arr[i] = NULL;
         }
         delete[] arr;
         arr = arr2;
         size /= 2;
     }
-    swap(1, num_elem);
-    delete arr[num_elem];
-    num_elem--;
-    siftDown(1);
 }
 
 void MinHeap::swap(int idx1, int idx2) {
