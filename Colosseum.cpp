@@ -10,8 +10,9 @@ Colosseum::Colosseum(int n, int *trainingGroupsIDs) {
     }
     gladTree = new RankSplayTree<int, int>();
     minHeap = new MinHeap(n, trainingGroupsIDs);
-    TrainingGroup** ptrArr = minHeap->makeHeap();
+    TrainingGroup** ptrArr = minHeap->getArr();
     hashTable = new HashTable(n, trainingGroupsIDs, ptrArr);
+    minHeap->makeHeap();
 }
 
 void Colosseum::addTrainingGroup(int trainingGroupID) {

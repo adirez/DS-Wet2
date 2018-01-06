@@ -22,11 +22,10 @@ MinHeap::~MinHeap() {
     delete[] arr;
 }
 
-TrainingGroup** MinHeap::makeHeap() {
+void MinHeap::makeHeap() {
     for (int i = num_elem/2; i >= 1; --i) {
         siftDown(i);
     }
-    return arr;
 }
 
 void MinHeap::siftDown(int idx) {
@@ -121,4 +120,8 @@ void MinHeap::swap(int idx1, int idx2) {
     int temp_idx = arr[idx1]->getIdx();
     arr[idx1]->setIdx(arr[idx2]->getIdx());
     arr[idx2]->setIdx(temp_idx);
+}
+
+TrainingGroup **MinHeap::getArr() {
+    return arr;
 }
