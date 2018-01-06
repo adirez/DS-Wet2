@@ -88,7 +88,7 @@ private:
     Node *findAux(Node *cur_node, const T& key, const S &data);
     // joins two trees when the right tree is bigger than the left tree. runs at O(log n) since it runs to the bottom right of the left tree.
     void join(Node *left_tree, Node *right_tree);
-
+    // not used
     RankSplayTree(const RankSplayTree &rank_splay_tree);
 
 public:
@@ -148,7 +148,7 @@ T &RankSplayTree<T, S>::find(const T &key, const S &data) {
 template<class T, class S>
 void RankSplayTree<T, S>::insert(const T &key, const S &data) {
     Node *found_node = findAux(root, key, data);
-    if (found_node != NULL && data == *found_node->data) {
+    if (found_node != NULL && data == *found_node->data && key == *found_node->key) {
         throw KeyAlreadyExists();
     }
     Node *to_insert = new Node(key, data, found_node);
@@ -532,16 +532,16 @@ void RankSplayTree<T, S>::postOrderAuxRemoval(RankSplayTree::Node *cur_node) {
 template<class T, class S>
 typename RankSplayTree<T, S>::Node *RankSplayTree<T, S>::findAux(RankSplayTree::Node *cur_node, const T& key, const S &data) {
     if (cur_node == NULL) return NULL;
-    if (data == *cur_node->data) {
+    if (data == *cur_node->data && key == *cur_node->key) {
         return cur_node;
     }
-    if (data > *cur_node->data) {
+    if (data > *cur_node->data || (data == *cur_node->data && key < *cur_node->key) ) {
         if (cur_node->right_son == NULL) {
             return cur_node;
         }
         return findAux(cur_node->right_son, key, data);
     }
-    if (data < *cur_node->data) {
+    if (data < *cur_node->data || (data == *cur_node->data && key > *cur_node->key) ) {
         if (cur_node->left_son == NULL) {
             return cur_node;
         }
@@ -653,7 +653,7 @@ bool RankSplayTree<T, S>::Node::operator<(const RankSplayTree<T, S>::Node &node)
 
 template<class T, class S>
 bool RankSplayTree<T, S>::Node::operator>(const RankSplayTree<T, S>::Node &node) const {
-    return *this->data > *node.data || (*this->data == *node.data && *this->key > *node.key);
+    return *this->data > *node.data || (*this->data == *node.data && *this->key < *node.key);
 }
 
 #endif //WET2_RANKSPLAYTREE_H

@@ -4,7 +4,7 @@
 
 #include "HashTable.h"
 
-HashTable::HashTable(int n, const int *array, TrainingGroup** ptrArr) {
+HashTable::HashTable(int n, const int* array, TrainingGroup** ptrArr) {
     list = new List<HashNode>[2*n];
     size = 2*n;
     int hash = 0;
