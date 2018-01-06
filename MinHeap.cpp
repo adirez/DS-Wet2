@@ -87,12 +87,14 @@ TrainingGroup* MinHeap::getMin() const {
 void MinHeap::delMin() {
     if (num_elem == 0) throw EmptyHeap();
     if (num_elem == 1){
-        delete arr[1];
+        TrainingGroup *to_delete = arr[1];
+        delete to_delete;
         num_elem--;
         return;
     }
     swap(1, num_elem);
-    delete(arr[num_elem]);
+    TrainingGroup *to_delete = arr[num_elem];
+    delete to_delete;
     num_elem--;
     siftDown(1);
     if(num_elem <= size /4){
