@@ -63,7 +63,7 @@ public:
      * @param array - an array containing the IDs of the groups
      * @param ptrArr - an array of pointers to the groups
      */
-    HashTable(int n, const int* array, TrainingGroup** ptrArr);
+    HashTable(int n, TrainingGroup** ptrArr);
     /**
      * a destructor for the hash table. deletes the array and all of the nodes within. the total sum of the gladiators within the entire table is m
      * and the number of the groups is O(n) and thus runs in a time complexity of O(m + n).

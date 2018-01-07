@@ -4,13 +4,13 @@
 
 #include "HashTable.h"
 
-HashTable::HashTable(int n, const int* array, TrainingGroup** ptrArr) {
+HashTable::HashTable(int n, TrainingGroup** ptrArr) {
     list = new List<HashNode>[2*n];
     size = 2*n;
     int hash = 0;
-    for (int i = 0; i < n; ++i) {
-        hash = array[i] % size;
-        HashNode hashNode(array[i], ptrArr[i+1]);
+    for (int i = 1; i <= n; ++i) {
+        hash = ptrArr[i]->getID() % size;
+        HashNode hashNode(ptrArr[i]->getID(), ptrArr[i]);
         list[hash].insert(hashNode);
     }
     num_elem = n;

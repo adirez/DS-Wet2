@@ -35,12 +35,9 @@ public:
     /**
      * makes the heap - iterates over the first half of the array and sifts down. the array is build as an almost-full binary tree and therefore this
      * can be done in O(n).
-     */
-    void makeHeap();
-    /**
      * @return - returns the array of the the groups in the heap to pass it for the hash c'tor
      */
-    TrainingGroup** getArr();
+    TrainingGroup** makeHeap();
     /**
      * receives a value of a training group and creates a new group to insert to the array. a group is created in O(1) and then inserted to the array.
      * insertion to a heap can be done in O(log n). if the array is now more than half full, we will re-allocate to a new array with double size and
